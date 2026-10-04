@@ -1,21 +1,18 @@
 {
-  "name": "team-attendee",
+  "name": "team-attendance",
   "version": "1.0.0",
-  "description": "Team Attendee — Simplify Work. Track Attendance. Empower Teams.",
   "private": true,
+  "description": "Team Attendance Android app",
   "scripts": {
-    "start": "npx serve www -l 5173",
-    "android:add": "npx cap add android",
-    "android:sync": "npx cap sync android",
-    "android:apk": "npx cap sync android && cd android && ./gradlew assembleDebug",
-    "android:open": "npx cap open android"
+    "build": "mkdir -p www && cp index.html www/index.html",
+    "android:add": "cap add android",
+    "android:sync": "cap sync android"
   },
   "dependencies": {
     "@capacitor/android": "^6.1.2",
     "@capacitor/core": "^6.1.2"
   },
   "devDependencies": {
-    "@capacitor/cli": "^6.1.2",
-    "serve": "^14.2.3"
+    "@capacitor/cli": "^6.1.2"
   }
 }

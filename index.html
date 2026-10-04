@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Team Attendance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #12263F;
+    --frost: #EEF3F8;
+    --white: #FFFFFF;
+    --line: #D5DEE8;
+    --slate: #566678;
+    --marigold: #F4B400;
+    --marigold-dark: #D99A00;
+    --green: #1E8E5A;
+    --green-soft: #DDF3E8;
+    --coral: #C9402A;
+    --coral-soft: #F9E0DB;
+    --amber: #8A5A00;
+    --amber-soft: #FCEFCF;
+    --blue: #1F5FA8;
+    --blue-soft: #DEEAF8;
+    --font-head: "Sora", system-ui, sans-serif;
+    --font-body: "Nunito Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--frost); color: var(--navy); font-family: var(--font-body); font-size: 16px; line-height: 1.45; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+  h1, h2, h3 { font-family: var(--font-head); margin: 0; letter-spacing: -0.01em; }
+
+  .btn { border: 1px solid var(--line); background: var(--white); border-radius: 8px; padding: 9px 16px; cursor: pointer; font-weight: 700; }
+  .btn:hover { background: #F6F9FC; }
+  .btn.primary { background: var(--marigold); border-color: var(--marigold); color: var(--navy); }
+  .btn.primary:hover { background: var(--marigold-dark); }
+  .btn.danger { color: var(--coral); border-color: #E6B8B0; }
+  .btn.small { padding: 5px 11px; font-size: 14px; }
+  .btn.big { padding: 13px 30px; font-size: 18px; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .link { background: none; border: 0; color: var(--blue); text-decoration: underline; cursor: pointer; padding: 0; font-weight: 700; }
+  .err { background: var(--coral-soft); color: var(--coral); border: 1px solid #E6B8B0; border-radius: 8px; padding: 10px 12px; font-weight: 700; margin: 0; }
+  .note { color: var(--slate); font-size: 14px; margin: 0; }
+
+  /* auth */
+  #auth { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; background: var(--navy); }
+  .auth-card { width: min(540px, 100%); background: var(--white); border-radius: 12px; padding: 26px; display: grid; gap: 13px; }
+  .auth-card h1 { font-size: 28px; }
+  label.f { display: grid; gap: 4px; font-weight: 700; font-size: 14px; }
+  label.f input, label.f select, label.f textarea { padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; font-weight: 400; width: 100%; background: #fff; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 480px) { .two { grid-template-columns: 1fr; } }
+  .av { border-radius: 50%; object-fit: cover; background: var(--blue-soft); color: var(--blue); display: flex; align-items: center; justify-content: center; font-weight: 700; font-family: var(--font-head); flex: none; overflow: hidden; }
+  .av.sm { width: 38px; height: 38px; font-size: 14px; }
+  .av.md { width: 64px; height: 64px; font-size: 22px; }
+  .av.lg { width: 96px; height: 96px; font-size: 30px; }
+  .av.xl { width: 150px; height: 150px; font-size: 48px; }
+
+  /* app shell */
+  .app-top { background: var(--navy); color: #fff; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 20px; flex-wrap: wrap; }
+  .app-top h2 { font-size: 18px; }
+  .who { display: flex; align-items: center; gap: 10px; }
+  .who small { color: #B8C6D6; display: block; line-height: 1.2; }
+  .app-top .btn { background: transparent; color: #fff; border-color: #4C6580; }
+  .app-top .btn:hover { background: #20395A; }
+  #content { max-width: 1040px; margin: 0 auto; padding: 20px; }
+  @media (max-width: 600px) { #content { padding: 14px; } }
+
+  /* home */
+  .home { display: grid; grid-template-columns: minmax(300px, 400px) 1fr; gap: 20px; align-items: start; }
+  @media (max-width: 860px) { .home { grid-template-columns: 1fr; } }
+  .punch { background: var(--white); border: 1px solid var(--line); border-radius: 12px; padding: 22px; text-align: center; display: grid; gap: 6px; justify-items: center; }
+  .hello { color: var(--slate); font-weight: 700; }
+  .clock { font-family: var(--font-head); font-size: 46px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .pdate { color: var(--slate); }
+  .state { margin: 8px 0 6px; font-weight: 700; min-height: 24px; }
+  .punch-btn { width: 160px; height: 160px; border-radius: 50%; border: 0; color: #fff; font-family: var(--font-head); font-size: 20px; font-weight: 700; cursor: pointer; box-shadow: 0 0 0 8px rgba(18,38,63,.07); }
+  .punch-btn.in { background: var(--green); }
+  .punch-btn.out { background: var(--coral); }
+  .punch-btn.done { background: #9AA8B7; cursor: not-allowed; }
+  .punch-btn:focus-visible { outline: 4px solid var(--blue); outline-offset: 4px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
+  .tile { all: unset; box-sizing: border-box; cursor: pointer; background: var(--white); border: 1px solid var(--line); border-top: 5px solid var(--c, var(--blue)); border-radius: 10px; padding: 16px; display: grid; gap: 6px; min-height: 124px; align-content: start; }
+  .tile:hover { background: #F8FBFE; }
+  .tile:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+  .tile svg { width: 26px; height: 26px; stroke: var(--c, var(--blue)); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .tile .t-name { font-family: var(--font-head); font-weight: 700; font-size: 17px; }
+  .tile .t-metric { color: var(--slate); font-size: 14px; }
+
+  /* sections */
+  .sec-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .sec-head h2 { font-size: 24px; }
+  .panel { background: var(--white); border: 1px solid var(--line); border-radius: 10px; padding: 18px; margin-bottom: 16px; }
+  .panel h3 { font-size: 17px; margin-bottom: 10px; }
+  .tools { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+  .tools input, .tools select { padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+  .chips { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .stat { background: var(--white); border: 1px solid var(--line); border-radius: 10px; padding: 10px 16px; min-width: 120px; }
+  .stat .k { color: var(--slate); font-size: 13px; }
+  .stat .v { font-family: var(--font-head); font-size: 22px; font-weight: 700; }
+  .stat.hero { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .stat.hero .k { color: #B8C6D6; }
+  .stat.hero .v { color: var(--marigold); font-size: 30px; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 560px; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  th { font-size: 13px; color: var(--slate); font-weight: 700; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tfoot td { font-weight: 700; border-bottom: 0; }
+  .row-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .pill { display: inline-block; padding: 2px 10px; border-radius: 99px; font-size: 12px; font-weight: 700; margin-right: 4px; }
+  .pill.ok { background: var(--green-soft); color: var(--green); }
+  .pill.warn { background: var(--amber-soft); color: var(--amber); }
+  .pill.bad { background: var(--coral-soft); color: var(--coral); }
+  .pill.info { background: var(--blue-soft); color: var(--blue); }
+  .empty { padding: 28px 16px; text-align: center; color: var(--slate); }
+  dl.facts { display: grid; grid-template-columns: 150px 1fr; gap: 10px 16px; margin: 0; }
+  dl.facts dt { color: var(--slate); }
+  dl.facts dd { margin: 0; word-break: break-word; white-space: pre-wrap; font-weight: 600; }
+  @media (max-width: 520px) { dl.facts { grid-template-columns: 1fr; gap: 2px; } dl.facts dd { margin-bottom: 10px; } }
+  .profile-top { display: flex; gap: 18px; align-items: center; margin-bottom: 18px; flex-wrap: wrap; }
+  .profile-top .nm { font-family: var(--font-head); font-size: 24px; font-weight: 700; }
+  .people-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+  .person-card { all: unset; box-sizing: border-box; cursor: pointer; display: grid; justify-items: center; gap: 6px; text-align: center; padding: 16px 10px; background: var(--white); border: 1px solid var(--line); border-radius: 10px; }
+  .person-card:hover { border-color: var(--blue); }
+  .person-card:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+  .pc-name { font-weight: 700; }
+
+  /* dialogs */
+  dialog { border: 1px solid var(--line); border-radius: 12px; padding: 0; width: min(520px, calc(100vw - 24px)); color: var(--navy); }
+  dialog::backdrop { background: rgba(18,38,63,.55); }
+  dialog form, dialog .pad { padding: 20px; display: grid; gap: 12px; }
+  dialog h3 { font-size: 20px; }
+  .dlg-actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+  .banner { padding: 14px; text-align: center; font-family: var(--font-head); font-size: 26px; font-weight: 700; color: #fff; border-radius: 8px; }
+  .banner.in { background: var(--green); }
+  .banner.out { background: var(--coral); }
+  .res-main { display: grid; justify-items: center; gap: 8px; }
+  .res-name { font-family: var(--font-head); font-size: 24px; font-weight: 700; text-align: center; }
+
+  #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--navy); color: #fff; padding: 10px 18px; border-radius: 8px; display: none; z-index: 20; max-width: 92vw; text-align: center; }
+  #toast.show { display: block; }
+</style>
+</head>
+<body>
+
+<!-- ================= PAGE 1: REGISTER / LOGIN ================= -->
+<div id="auth" hidden>
+  <form class="auth-card" id="registerForm" autocomplete="off">
+    <h1>Register</h1>
+    <p class="note" id="regIntro"></p>
+    <label class="f" id="companyRow">Company name<input name="company"></label>
+    <label class="f" id="roleRow">I am a
+      <select name="role"><option value="worker">Worker</option><option value="manager">Manager</option></select>
+    </label>
+    <label class="f" id="codeRow"><span id="codeLabel">Company code</span><input name="companyCode" autocomplete="off"></label>
+    <label class="f">Full name<input name="name" required></label>
+    <div class="two">
+      <label class="f">Date of birth<input name="dob" type="date" required></label>
+      <label class="f">Placement<input name="placement" required placeholder="Job title or position"></label>
+    </div>
+    <label class="f">Address<textarea name="address" rows="2" required></textarea></label>
+    <label class="f">Phone number<input name="phone" type="tel"></label>
+    <div class="two">
+      <label class="f">Create 4-digit PIN<input name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required></label>
+      <label class="f">Confirm PIN<input name="pin2" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required></label>
+    </div>
+    <p class="err" id="regError" role="alert" hidden></p>
+    <button type="submit" class="btn primary big">Register</button>
+    <p class="note" id="toLoginRow">Already registered? <button type="button" class="link" id="toLogin">Log in</button></p>
+  </form>
+
+  <form class="auth-card" id="loginForm" autocomplete="off" hidden>
+    <h1>Log in</h1>
+    <p class="note">Enter the ID you got when you registered (like W-0001) and your PIN.</p>
+    <label class="f">ID<input name="code" required placeholder="W-0001" autocapitalize="characters"></label>
+    <label class="f">PIN<input name="pin" type="password" inputmode="numeric" maxlength="4" required></label>
+    <p class="err" id="loginError" role="alert" hidden></p>
+    <button type="submit" class="btn primary big">Log in</button>
+    <p class="note">New here? <button type="button" class="link" id="toRegister">Register</button></p>
+  </form>
+</div>
+
+<!-- ================= PAGE 2: APP ================= -->
+<div id="app" hidden>
+  <header class="app-top">
+    <h2 id="companyName"></h2>
+    <div class="who">
+      <div id="whoAvatar"></div>
+      <div><strong id="whoName"></strong><small id="whoRole"></small></div>
+      <button class="btn small" id="btnLogout">Switch user</button>
+    </div>
+  </header>
+  <main id="content"></main>
+</div>
+
+<!-- Welcome after register -->
+<dialog id="welcomeDlg"><div class="pad" id="welcomeBody"></div></dialog>
+
+<!-- Check in/out result -->
+<dialog id="resultDlg"><div class="pad" id="resultBody"></div></dialog>
+
+<!-- Edit person -->
+<dialog id="editDlg">
+  <form method="dialog" id="editForm">
+    <h3 id="editTitle">Edit profile</h3>
+    <label class="f">Full name<input name="name" required></label>
+    <div class="two">
+      <label class="f">Date of birth<input name="dob" type="date" required></label>
+      <label class="f">Placement<input name="placement" required></label>
+    </div>
+    <label class="f">Address<textarea name="address" rows="2" required></textarea></label>
+    <div class="two">
+      <label class="f">Phone number<input name="phone" type="tel"></label>
+      <label class="f" id="salaryRow">Monthly salary<input name="salary" type="number" min="0" step="0.01"></label>
+    </div>
+    <label class="f">New PIN (leave blank to keep the current one)<input name="newPin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4"></label>
+    <div class="dlg-actions">
+      <button type="button" class="btn danger" id="removePerson" hidden>Remove person</button>
+      <button type="button" class="btn" data-close>Cancel</button>
+      <button type="submit" class="btn primary">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Attendance correction (manager) -->
+<dialog id="attDlg">
+  <form method="dialog" id="attForm">
+    <h3>Add or correct attendance</h3>
+    <label class="f">Person<select name="userId"></select></label>
+    <label class="f">Date<input name="date" type="date" required></label>
+    <div class="two">
+      <label class="f">Check-in time<input name="inT" type="time" required></label>
+      <label class="f">Check-out time<input name="outT" type="time"></label>
+    </div>
+    <div class="dlg-actions">
+      <button type="button" class="btn danger" id="attDelete" hidden>Delete record</button>
+      <button type="button" class="btn" data-close>Cancel</button>
+      <button type="submit" class="btn primary">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Payment (manager) -->
+<dialog id="payDlg">
+  <form method="dialog" id="payForm">
+    <h3 id="payTitle">Record payment</h3>
+    <div class="two">
+      <label class="f">Amount<input name="amount" type="number" min="0" step="0.01" required></label>
+      <label class="f">Type<select name="type"><option>Salary paid</option><option>Advance</option></select></label>
+    </div>
+    <div class="two">
+      <label class="f">For month<input name="month" type="month" required></label>
+      <label class="f">Date paid<input name="date" type="date" required></label>
+    </div>
+    <label class="f">Note<input name="note" placeholder="e.g. Cash, UPI, bank transfer"></label>
+    <div class="dlg-actions">
+      <button type="button" class="btn" data-close>Cancel</button>
+      <button type="submit" class="btn primary">Save payment</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Payment history -->
+<dialog id="histDlg"><div class="pad" id="histBody"></div></dialog>
+
+<input type="file" id="restoreInput" accept=".json,application/json" hidden>
+<div id="toast" role="status"></div>
+
+<script>
+(function () {
+  'use strict';
+  const KEY = 'team-attendance-v1', SKEY = 'team-attendance-session-v1';
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+  const pad = n => String(n).padStart(2, '0');
+  const ymd = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const todayStr = () => ymd(new Date());
+  const curMonth = () => todayStr().slice(0, 7);
+  const round2 = n => Math.round(n * 100) / 100;
+  const money = n => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n || 0);
+  const fmtT = ts => ts ? new Date(ts).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '';
+  const fmtD = s => s ? new Date(s + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+  const fmtLong = s => s ? new Date(s + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+  const monthLabel = m => new Date(m + '-01T00:00:00').toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+  const timeOfDay = ts => { const d = new Date(ts); return pad(d.getHours()) + ':' + pad(d.getMinutes()); };
+  const hoursOf = r => r.checkOut ? (r.checkOut - r.checkIn) / 36e5 : 0;
+  const durTxt = h => { const m = Math.round(h * 60); return m >= 60 ? Math.floor(m / 60) + 'h ' + (m % 60) + 'm' : m + 'm'; };
+  const nextMonth = m => { const [y, mo] = m.split('-').map(Number); return mo === 12 ? (y + 1) + '-01' : y + '-' + pad(mo + 1); };
+  const initials = n => String(n || '').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+  const avatar = (u, cls) => `<div class="av ${cls}">${esc(initials(u.name))}</div>`;
+
+  /* ---------- State ---------- */
+  const defaults = () => ({ settings: { company: '', code: '', workingDays: 26, halfDayHours: 4, lateAfter: '10:00' }, users: [], attendance: [], payments: [], leaves: [] });
+  let data = defaults();
+  let me = null, page = 'home', authMode = 'register';
+  let attMonth = curMonth(), attUser = 'all', salMonth = curMonth();
+  let editingUser = null, editingAtt = null, payUserId = null;
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) { const d = JSON.parse(raw); data = Object.assign(defaults(), d); data.settings = Object.assign(defaults().settings, d.settings || {}); }
+    } catch (e) { /* storage unavailable */ }
+  }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(data)); }
+    catch (e) { toast('Could not save on this device. Download a backup from the Profile page.'); }
+  }
+  const getSession = () => { try { return localStorage.getItem(SKEY); } catch (e) { return null; } };
+  const setSession = id => { try { id ? localStorage.setItem(SKEY, id) : localStorage.removeItem(SKEY); } catch (e) { /* ignore */ } };
+  function toast(msg) {
+    const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('show'), 3200);
+  }
+
+  /* ---------- Calculations ---------- */
+  const userById = id => data.users.find(u => u.id === id);
+  const isMgr = () => me && me.role === 'manager';
+  const recOn = (userId, date) => data.attendance.find(a => a.userId === userId && a.date === date);
+  function dayStatus(r) {
+    if (!r.checkOut) return r.date === todayStr() ? 'Working' : 'No check-out';
+    return hoursOf(r) < Number(data.settings.halfDayHours) ? 'Half day' : 'Present';
+  }
+  const isLate = r => timeOfDay(r.checkIn) > data.settings.lateAfter;
+  function eachDate(from, to, cb) {
+    const d = new Date(from + 'T00:00:00'), end = new Date(to + 'T00:00:00');
+    for (let i = 0; d <= end && i < 400; i++) { cb(ymd(d)); d.setDate(d.getDate() + 1); }
+  }
+  function onLeaveToday(userId) {
+    const t = todayStr();
+    return data.leaves.some(l => l.userId === userId && l.status === 'approved' && l.from <= t && l.to >= t);
+  }
+  function monthSummary(userId, month) {
+    const u = userById(userId);
+    const recs = data.attendance.filter(a => a.userId === userId && a.date.startsWith(month));
+    let present = 0, half = 0, late = 0;
+    recs.forEach(r => { if (dayStatus(r) === 'Half day') half++; else present++; if (isLate(r)) late++; });
+    const attDates = new Set(recs.map(r => r.date));
+    let leave = 0;
+    data.leaves.filter(l => l.userId === userId && l.status === 'approved').forEach(l =>
+      eachDate(l.from, l.to, d => { if (d.startsWith(month) && !attDates.has(d)) leave++; }));
+    const paidDays = present + half * 0.5 + leave;
+    const wd = Number(data.settings.workingDays) || 26;
+    const salary = Number(u && u.salary) || 0;
+    const earned = Math.min(salary, round2(salary / wd * paidDays));
+    const paid = round2(data.payments.filter(p => p.userId === userId && p.month === month).reduce((s, p) => s + Number(p.amount), 0));
+    return { present, half, late, leave, paidDays, salary, earned, paid, remaining: round2(earned - paid) };
+  }
+  function totalRemaining(userId) {
+    const u = userById(userId); if (!u) return 0;
+    let start = (u.joined || todayStr()).slice(0, 7);
+    data.attendance.filter(a => a.userId === userId).forEach(a => { if (a.date.slice(0, 7) < start) start = a.date.slice(0, 7); });
+    let m = start, sum = 0, guard = 0;
+    while (m <= curMonth() && guard++ < 240) { sum += monthSummary(userId, m).remaining; m = nextMonth(m); }
+    return round2(sum);
+  }
+  function statusPill(r) {
+    const s = dayStatus(r);
+    const cls = s === 'Present' ? 'ok' : s === 'Half day' ? 'warn' : s === 'Working' ? 'info' : 'bad';
+    return `<span class="pill ${cls}">${s}</span>` + (isLate(r) ? '<span class="pill warn">Late</span>' : '');
+  }
+
+  /* ---------- Page 1: register / login ---------- */
+  function renderAuth() {
+    $('#auth').hidden = false; $('#app').hidden = true;
+    const reg = authMode === 'register' || !data.users.length;
+    $('#registerForm').hidden = !reg; $('#loginForm').hidden = reg;
+    if (reg) updateRegisterForm();
+  }
+  function updateRegisterForm() {
+    const f = $('#registerForm'), first = !data.users.length;
+    $('#companyRow').hidden = !first; f.elements.company.required = first;
+    $('#roleRow').hidden = first;
+    const role = first ? 'manager' : f.elements.role.value;
+    const needCode = first || role === 'manager';
+    $('#codeRow').hidden = !needCode; f.elements.companyCode.required = needCode;
+    $('#codeLabel').textContent = first ? 'Create a company code (min 4 characters)' : 'Company code (ask your manager)';
+    $('#toLoginRow').hidden = first;
+    $('#regIntro').textContent = first
+      ? 'You are the first person, so you will be the company manager. The company code lets other managers register later. Workers do not need it.'
+      : 'Register once. After this, the app opens by itself on this device.';
+  }
+  $('#registerForm').elements.role.onchange = updateRegisterForm;
+  $('#toLogin').onclick = () => { authMode = 'login'; renderAuth(); };
+  $('#toRegister').onclick = () => { authMode = 'register'; renderAuth(); };
+
+  function nextCode(role) {
+    const pre = role === 'manager' ? 'M-' : 'W-';
+    const max = data.users.filter(u => u.role === role).reduce((m, u) => Math.max(m, parseInt(String(u.code).slice(2), 10) || 0), 0);
+    return pre + String(max + 1).padStart(4, '0');
+  }
+  function showErr(id, msg) {
+    const el = $(id); el.textContent = msg; el.hidden = false;
+    el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+  const hideErr = id => { $(id).hidden = true; };
+  $('#registerForm').onsubmit = e => {
+    e.preventDefault();
+    hideErr('#regError');
+    try {
+      const f = e.target, first = !data.users.length;
+      const role = first ? 'manager' : f.elements.role.value;
+      if (!/^[0-9]{4}$/.test(f.elements.pin.value)) { showErr('#regError', 'PIN must be exactly 4 digits (numbers only).'); return; }
+      if (f.elements.pin.value !== f.elements.pin2.value) { showErr('#regError', 'The two PINs do not match.'); return; }
+      if (first) {
+        const code = f.elements.companyCode.value.trim();
+        if (code.length < 4) { showErr('#regError', 'Company code needs at least 4 characters.'); return; }
+        data.settings.company = f.elements.company.value.trim(); data.settings.code = code;
+      } else if (role === 'manager' && f.elements.companyCode.value.trim() !== data.settings.code) {
+        showErr('#regError', 'Wrong company code. Ask the company manager for it.'); return;
+      }
+      const u = { id: uid(), code: nextCode(role), role, name: f.elements.name.value.trim(), dob: f.elements.dob.value, address: f.elements.address.value.trim(), placement: f.elements.placement.value.trim(), phone: f.elements.phone.value.trim(), pin: f.elements.pin.value, salary: 0, joined: todayStr() };
+      data.users.push(u); save(); setSession(u.id);
+      me = u; page = 'home'; f.reset();
+      window.scrollTo(0, 0);
+      render();
+      $('#welcomeBody').innerHTML = `
+        <div class="banner in">Registration complete</div>
+        <div class="res-main">${avatar(u, 'xl')}<div class="res-name">${esc(u.name)}</div></div>
+        <dl class="facts"><dt>Your ID</dt><dd style="font-size:22px">${esc(u.code)}</dd><dt>Placement</dt><dd>${esc(u.placement)}</dd></dl>
+        <p class="note">Remember your ID and PIN. This device will stay logged in, so you will not need to register again.</p>
+        <div class="dlg-actions"><button class="btn primary big" id="welcomeGo">Open app</button></div>`;
+      $('#welcomeGo').onclick = () => $('#welcomeDlg').close();
+      $('#welcomeDlg').showModal();
+    } catch (err) {
+      showErr('#regError', 'Something went wrong: ' + (err && err.message ? err.message : err));
+    }
+  };
+  $('#loginForm').onsubmit = e => {
+    e.preventDefault();
+    const code = e.target.elements.code.value.trim().toUpperCase(), pin = e.target.elements.pin.value;
+    const u = data.users.find(x => x.code.toUpperCase() === code && x.pin === pin);
+    hideErr('#loginError');
+    if (!u) { showErr('#loginError', 'ID or PIN is wrong. Check the ID (like W-0001) and try again.'); return; }
+    me = u; setSession(u.id); page = 'home'; e.target.reset(); render();
+  };
+  $('#btnLogout').onclick = () => { setSession(null); me = null; authMode = 'login'; render(); };
+
+  /* ---------- Page 2: app shell ---------- */
+  function render() {
+    if (!me) { renderAuth(); return; }
+    me = userById(me.id) || me;
+    $('#auth').hidden = true; $('#app').hidden = false;
+    $('#companyName').textContent = data.settings.company || 'Team Attendance';
+    $('#whoAvatar').innerHTML = avatar(me, 'sm');
+    $('#whoName').textContent = me.name;
+    $('#whoRole').textContent = (me.role === 'manager' ? 'Manager' : 'Worker') + ' · ' + me.code;
+    const box = $('#content');
+    if (page === 'home') renderHome(box);
+    else {
+      box.innerHTML = `<div class="sec-head"><button class="btn small" id="backBtn">Back</button><h2 id="secTitle"></h2></div><div id="secBody"></div>`;
+      $('#backBtn').onclick = () => { page = 'home'; render(); };
+      const body = $('#secBody');
+      const titles = { profile: 'Profile', attendance: 'Attendance', salary: 'Salary', leave: 'Leave', team: 'Team' };
+      $('#secTitle').textContent = titles[page];
+      ({ profile: renderProfile, attendance: renderAttendance, salary: renderSalary, leave: renderLeave, team: renderTeam })[page](body);
+    }
+  }
+  setInterval(() => { const c = $('#clock'); if (c) c.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }); }, 1000);
+
+  const ICONS = {
+    profile: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>',
+    attendance: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M9 15l2 2 4-4"/></svg>',
+    salary: '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><circle cx="12" cy="12.5" r="2.5"/><path d="M6 9v1M18 15v1"/></svg>',
+    leave: '<svg viewBox="0 0 24 24"><path d="M5 19c0-8 5-13 14-14 0 9-5 14-14 14z"/><path d="M5 19c3-4 6-6 9-8"/></svg>',
+    team: '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><circle cx="17" cy="9" r="2.5"/><path d="M2 20c0-3.8 3-6 7-6s7 2.2 7 6M16 14c3 0 6 1.7 6 5"/></svg>'
+  };
+
+  function renderHome(box) {
+    const t = todayStr(), rec = recOn(me.id, t);
+    const hr = new Date().getHours();
+    const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+    let state, cls, label;
+    if (!rec) { state = 'You have not checked in today.'; cls = 'in'; label = 'Check in'; }
+    else if (!rec.checkOut) { state = 'Checked in at ' + fmtT(rec.checkIn) + '.'; cls = 'out'; label = 'Check out'; }
+    else { state = `In ${fmtT(rec.checkIn)} · Out ${fmtT(rec.checkOut)} · ${durTxt(hoursOf(rec))}`; cls = 'done'; label = 'Done for today'; }
+
+    const mgr = isMgr(), month = curMonth();
+    const my = monthSummary(me.id, month);
+    const inNow = data.attendance.filter(a => a.date === t && !a.checkOut).length;
+    const pendingLeaves = data.leaves.filter(l => l.status === 'pending' && (mgr ? l.userId !== me.id : l.userId === me.id)).length;
+    const teamPending = round2(data.users.reduce((s, u) => s + Math.max(0, totalRemaining(u.id)), 0));
+    const tiles = mgr
+      ? [['team', 'Team', `${inNow} in now · ${data.users.length} people`, '#1F5FA8'],
+         ['attendance', 'Attendance', 'All workers, by month', '#1E8E5A'],
+         ['salary', 'Salary', 'Pending ' + money(teamPending), '#D99A00'],
+         ['leave', 'Leave', pendingLeaves + ' to review', '#8A4FB0'],
+         ['profile', 'Profile', 'ID ' + me.code + ' · settings', '#566678']]
+      : [['profile', 'Profile', 'ID ' + me.code, '#566678'],
+         ['attendance', 'Attendance', (my.present + my.half) + ' days this month', '#1E8E5A'],
+         ['salary', 'Salary', 'Remaining ' + money(totalRemaining(me.id)), '#D99A00'],
+         ['leave', 'Leave', pendingLeaves + ' pending', '#8A4FB0']];
+
+    box.innerHTML = `<div class="home">
+      <section class="punch">
+        <div class="hello">${greet}, ${esc(me.name.split(' ')[0])}</div>
+        <div class="clock" id="clock">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</div>
+        <div class="pdate">${new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+        <div class="state">${esc(state)}</div>
+        <button class="punch-btn ${cls}" id="punchBtn" ${cls === 'done' ? 'disabled' : ''}>${label}</button>
+      </section>
+      <section class="tiles">${tiles.map(x => `<button class="tile" data-page="${x[0]}" style="--c:${x[3]}">${ICONS[x[0]]}<span class="t-name">${x[1]}</span><span class="t-metric">${esc(x[2])}</span></button>`).join('')}</section>
+    </div>`;
+    $('#punchBtn').onclick = punch;
+    box.querySelectorAll('.tile').forEach(b => b.onclick = () => { page = b.dataset.page; render(); });
+  }
+
+  function punch() {
+    const t = todayStr(); let rec = recOn(me.id, t); const now = Date.now();
+    if (!rec) { rec = { id: uid(), userId: me.id, date: t, checkIn: now, checkOut: 0 }; data.attendance.push(rec); save(); render(); showResult('in', rec); }
+    else if (!rec.checkOut) { rec.checkOut = now; save(); render(); showResult('out', rec); }
+  }
+  let resultTimer = null;
+  function showResult(kind, rec) {
+    const isIn = kind === 'in';
+    const row = (k, v) => `<dt>${k}</dt><dd>${v ? v : '<span style="color:var(--slate)">Not added</span>'}</dd>`;
+    $('#resultBody').innerHTML = `
+      <div class="banner ${isIn ? 'in' : 'out'}">${isIn ? 'Checked in' : 'Checked out'}</div>
+      <div class="res-main">${avatar(me, 'xl')}<div class="res-name">${esc(me.name)}</div></div>
+      <dl class="facts">
+        ${row('ID', esc(me.code))}
+        ${row('Placement', esc(me.placement))}
+        ${row('Date of birth', esc(fmtLong(me.dob)))}
+        ${row('Address', esc(me.address))}
+        ${row(isIn ? 'Checked in at' : 'Checked out at', esc(fmtT(isIn ? rec.checkIn : rec.checkOut)))}
+        ${isIn ? '' : row('Worked today', esc(durTxt(hoursOf(rec))))}
+      </dl>
+      <div class="dlg-actions"><button class="btn primary big" id="resDone">Done</button></div>`;
+    $('#resDone').onclick = () => $('#resultDlg').close();
+    clearTimeout(resultTimer);
+    resultTimer = setTimeout(() => { if ($('#resultDlg').open) $('#resultDlg').close(); }, 15000);
+    $('#resultDlg').showModal();
+  }
+  $('#resultDlg').addEventListener('close', () => clearTimeout(resultTimer));
+
+  /* ---------- Profile ---------- */
+  function renderProfile(box) {
+    const row = (k, v) => `<dt>${k}</dt><dd>${v ? v : '<span style="color:var(--slate)">Not added</span>'}</dd>`;
+    const s = monthSummary(me.id, curMonth());
+    let html = `<div class="panel">
+      <div class="profile-top">${avatar(me, 'xl')}<div><div class="nm">${esc(me.name)}</div><div class="note">${me.role === 'manager' ? 'Manager' : 'Worker'} · ${esc(me.code)}</div><button class="btn small" id="editMe" style="margin-top:10px">Edit profile</button></div></div>
+      <dl class="facts">
+        ${row('Placement', esc(me.placement))}
+        ${row('Date of birth', esc(fmtLong(me.dob)))}
+        ${row('Address', esc(me.address))}
+        ${row('Phone', esc(me.phone))}
+        ${row('Joined', esc(fmtLong(me.joined)))}
+        ${row('Monthly salary', me.salary ? money(me.salary) : '')}
+      </dl></div>`;
+    if (isMgr()) {
+      const st = data.settings;
+      html += `<div class="panel"><h3>Company settings</h3>
+        <form id="settingsForm" style="display:grid;gap:12px">
+          <div class="two"><label class="f">Company name<input name="company" value="${esc(st.company)}"></label>
+          <label class="f">Company code (for new managers)<input name="code" value="${esc(st.code)}" minlength="4"></label></div>
+          <div class="two"><label class="f">Working days per month<input name="workingDays" type="number" min="1" max="31" value="${esc(st.workingDays)}"></label>
+          <label class="f">Half day if worked under (hours)<input name="halfDayHours" type="number" min="1" max="12" step="0.5" value="${esc(st.halfDayHours)}"></label></div>
+          <label class="f">Mark late if check-in is after<input name="lateAfter" type="time" value="${esc(st.lateAfter)}"></label>
+          <div><button class="btn primary" type="submit">Save settings</button></div>
+        </form></div>
+        <div class="panel"><h3>Reports and backup</h3>
+          <div class="tools">
+            <button class="btn" id="expAtt">Attendance (CSV)</button>
+            <button class="btn" id="expSal">Salary this month (CSV)</button>
+            <button class="btn" id="expPay">Payments (CSV)</button>
+          </div>
+          <div class="tools">
+            <button class="btn primary" id="expBackup">Download full backup</button>
+            <button class="btn" id="btnRestore">Restore backup</button>
+          </div>
+          <p class="note">Data is stored on this device only. The backup file contains everyone's details and PINs, so keep it safe.</p>
+        </div>`;
+    }
+    box.innerHTML = html;
+    $('#editMe').onclick = () => openEdit(me);
+    if (isMgr()) bindManagerTools();
+  }
+
+  function bindManagerTools() {
+    $('#settingsForm').onsubmit = e => {
+      e.preventDefault();
+      const f = e.target.elements, st = data.settings;
+      if (f.code.value.trim().length < 4) { toast('Company code needs at least 4 characters.'); return; }
+      st.company = f.company.value.trim(); st.code = f.code.value.trim();
+      st.workingDays = Number(f.workingDays.value) || 26; st.halfDayHours = Number(f.halfDayHours.value) || 4; st.lateAfter = f.lateAfter.value || '10:00';
+      save(); render(); toast('Settings saved');
+    };
+    $('#expAtt').onclick = () => {
+      const rows = [['date', 'id', 'name', 'check in', 'check out', 'hours', 'status']];
+      data.attendance.slice().sort((a, b) => a.date.localeCompare(b.date)).forEach(r => { const u = userById(r.userId) || {}; rows.push([r.date, u.code, u.name, fmtT(r.checkIn), fmtT(r.checkOut), r.checkOut ? round2(hoursOf(r)) : '', dayStatus(r) + (isLate(r) ? ' (late)' : '')]); });
+      download('attendance-' + todayStr() + '.csv', toCsv(rows), 'text/csv');
+    };
+    $('#expSal').onclick = () => {
+      const m = curMonth(), rows = [['month', 'id', 'name', 'monthly salary', 'present', 'half days', 'leave days', 'earned', 'paid', 'remaining this month', 'remaining all months']];
+      data.users.forEach(u => { const s = monthSummary(u.id, m); rows.push([m, u.code, u.name, s.salary, s.present, s.half, s.leave, s.earned, s.paid, s.remaining, totalRemaining(u.id)]); });
+      download('salary-' + m + '.csv', toCsv(rows), 'text/csv');
+    };
+    $('#expPay').onclick = () => {
+      const rows = [['date paid', 'id', 'name', 'for month', 'type', 'amount', 'note']];
+      data.payments.slice().sort((a, b) => a.date.localeCompare(b.date)).forEach(p => { const u = userById(p.userId) || {}; rows.push([p.date, u.code, u.name, p.month, p.type, p.amount, p.note]); });
+      download('payments-' + todayStr() + '.csv', toCsv(rows), 'text/csv');
+    };
+    $('#expBackup').onclick = () => download('team-attendance-backup-' + todayStr() + '.json', JSON.stringify(data, null, 2), 'application/json');
+    $('#btnRestore').onclick = () => $('#restoreInput').click();
+  }
+  $('#restoreInput').onchange = e => {
+    const file = e.target.files[0]; e.target.value = '';
+    if (!file) return;
+    const rd = new FileReader();
+    rd.onload = () => {
+      try {
+        const d = JSON.parse(rd.result);
+        if (!d || !Array.isArray(d.users) || !Array.isArray(d.attendance)) throw new Error('bad');
+        if (!confirm(`Replace all current data with this backup (${d.users.length} people, ${d.attendance.length} attendance records)?`)) return;
+        data = Object.assign(defaults(), d); data.settings = Object.assign(defaults().settings, d.settings || {});
+        save();
+        me = userById(me.id) || null;
+        if (!me) { setSession(null); authMode = 'login'; }
+        render(); toast('Backup restored');
+      } catch (err) { toast('That file is not a Team Attendance backup.'); }
+    };
+    rd.readAsText(file);
+  };
+
+  function download(name, text, type) {
+    const blob = new Blob([text], { type });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+  const csvCell = s => { s = String(s == null ? '' : s); return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const toCsv = rows => '\ufeff' + rows.map(r => r.map(csvCell).join(',')).join('\r\n');
+
+  /* ---------- Edit person ---------- */
+  function openEdit(u) {
+    editingUser = u;
+    const f = $('#editForm'); f.reset();
+    const self = u.id === me.id;
+    $('#editTitle').textContent = self ? 'Edit profile' : 'Person details';
+    ['name', 'dob', 'placement', 'address', 'phone'].forEach(k => f.elements[k].value = u[k] || '');
+    f.elements.salary.value = u.salary || '';
+    f.elements.placement.disabled = !isMgr();
+    $('#salaryRow').hidden = !isMgr();
+    f.elements.newPin.required = false;
+    $('#removePerson').hidden = !(isMgr() && !self);
+    $('#editDlg').showModal();
+  }
+  $('#editForm').onsubmit = e => {
+    e.preventDefault();
+    const f = e.target.elements, u = editingUser; if (!u) return;
+    if (f.newPin.value && !/^[0-9]{4}$/.test(f.newPin.value)) { toast('PIN must be exactly 4 digits.'); return; }
+    u.name = f.name.value.trim(); u.dob = f.dob.value; u.address = f.address.value.trim(); u.phone = f.phone.value.trim();
+    if (isMgr()) { u.placement = f.placement.value.trim(); u.salary = Number(f.salary.value) || 0; }
+    if (f.newPin.value) u.pin = f.newPin.value;
+    save(); $('#editDlg').close(); render(); toast('Saved');
+  };
+  $('#removePerson').onclick = () => {
+    const u = editingUser;
+    if (!u || u.id === me.id) return;
+    if (u.role === 'manager' && data.users.filter(x => x.role === 'manager').length < 2) { toast('You cannot remove the only manager.'); return; }
+    if (!confirm(`Remove ${u.name}? Their attendance, payments and leave records will be deleted too.`)) return;
+    data.users = data.users.filter(x => x.id !== u.id);
+    data.attendance = data.attendance.filter(x => x.userId !== u.id);
+    data.payments = data.payments.filter(x => x.userId !== u.id);
+    data.leaves = data.leaves.filter(x => x.userId !== u.id);
+    save(); $('#editDlg').close(); render(); toast('Person removed');
+  };
+
+  /* ---------- Team (manager) ---------- */
+  function renderTeam(box) {
+    if (!isMgr()) { box.innerHTML = '<div class="empty">Only managers can see the team.</div>'; return; }
+    const list = data.users.slice().sort((a, b) => a.name.localeCompare(b.name));
+    box.innerHTML = `<div class="people-grid">${list.map(u => {
+      const rec = recOn(u.id, todayStr());
+      let st = '<span class="pill bad">Not in yet</span>';
+      if (rec && !rec.checkOut) st = `<span class="pill ok">In since ${fmtT(rec.checkIn)}</span>`;
+      else if (rec) st = `<span class="pill info">Left ${fmtT(rec.checkOut)}</span>`;
+      else if (onLeaveToday(u.id)) st = '<span class="pill warn">On leave</span>';
+      return `<button class="person-card" data-id="${u.id}">${avatar(u, 'md')}<span class="pc-name">${esc(u.name)}</span><span class="note">${esc(u.placement)} · ${esc(u.code)}</span>${st}</button>`;
+    }).join('')}</div>`;
+    box.querySelectorAll('.person-card').forEach(b => b.onclick = () => openEdit(userById(b.dataset.id)));
+  }
+
+  /* ---------- Attendance ---------- */
+  function renderAttendance(box) {
+    const mgr = isMgr();
+    const target = mgr ? attUser : me.id;
+    let recs = data.attendance.filter(a => a.date.startsWith(attMonth) && (target === 'all' || a.userId === target));
+    recs.sort((a, b) => b.date.localeCompare(a.date) || ((userById(a.userId) || {}).name || '').localeCompare((userById(b.userId) || {}).name || ''));
+    let summary;
+    if (target === 'all') {
+      const t = todayStr();
+      summary = `<div class="stat"><div class="k">In now</div><div class="v">${data.attendance.filter(a => a.date === t && !a.checkOut).length}</div></div>
+        <div class="stat"><div class="k">People</div><div class="v">${data.users.length}</div></div>
+        <div class="stat"><div class="k">Records this month</div><div class="v">${recs.length}</div></div>`;
+    } else {
+      const s = monthSummary(target, attMonth);
+      summary = `<div class="stat"><div class="k">Present</div><div class="v">${s.present}</div></div>
+        <div class="stat"><div class="k">Half days</div><div class="v">${s.half}</div></div>
+        <div class="stat"><div class="k">Late</div><div class="v">${s.late}</div></div>
+        <div class="stat"><div class="k">Leave days</div><div class="v">${s.leave}</div></div>`;
+    }
+    const showName = target === 'all';
+    box.innerHTML = `
+      <div class="tools">
+        <input type="month" id="attMonth" value="${attMonth}" aria-label="Month">
+        ${mgr ? `<select id="attUser" aria-label="Person"><option value="all">Everyone</option>${data.users.map(u => `<option value="${u.id}" ${attUser === u.id ? 'selected' : ''}>${esc(u.name)} (${esc(u.code)})</option>`).join('')}</select>
+        <button class="btn primary small" id="attAdd">Add or correct record</button>` : ''}
+      </div>
+      <div class="chips">${summary}</div>
+      <div class="panel"><div class="table-wrap">${recs.length ? `<table>
+        <thead><tr><th>Date</th>${showName ? '<th>Person</th>' : ''}<th>Check in</th><th>Check out</th><th>Hours</th><th>Status</th>${mgr ? '<th></th>' : ''}</tr></thead>
+        <tbody>${recs.map(r => { const u = userById(r.userId) || { name: 'Removed', code: '' }; return `<tr>
+          <td>${esc(fmtD(r.date))}</td>${showName ? `<td>${esc(u.name)}<br><span class="note">${esc(u.code)}</span></td>` : ''}
+          <td>${fmtT(r.checkIn)}</td><td>${r.checkOut ? fmtT(r.checkOut) : '-'}</td>
+          <td>${r.checkOut ? durTxt(hoursOf(r)) : '-'}</td><td>${statusPill(r)}</td>
+          ${mgr ? `<td><div class="row-actions"><button class="btn small" data-edit="${r.id}">Edit</button></div></td>` : ''}</tr>`; }).join('')}</tbody>
+      </table>` : '<div class="empty">No attendance records for this month.</div>'}</div></div>`;
+    $('#attMonth').onchange = e => { attMonth = e.target.value || curMonth(); render(); };
+    if (mgr) {
+      $('#attUser').onchange = e => { attUser = e.target.value; render(); };
+      $('#attAdd').onclick = () => openAtt(null);
+      box.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openAtt(data.attendance.find(x => x.id === b.dataset.edit)));
+    }
+  }
+  function openAtt(r) {
+    editingAtt = r;
+    const f = $('#attForm'); f.reset();
+    f.elements.userId.innerHTML = data.users.map(u => `<option value="${u.id}">${esc(u.name)} (${esc(u.code)})</option>`).join('');
+    f.elements.userId.value = r ? r.userId : (attUser !== 'all' ? attUser : data.users[0].id);
+    f.elements.userId.disabled = !!r;
+    f.elements.date.value = r ? r.date : todayStr();
+    f.elements.inT.value = r ? timeOfDay(r.checkIn) : '10:00';
+    f.elements.outT.value = r && r.checkOut ? timeOfDay(r.checkOut) : '';
+    $('#attDelete').hidden = !r;
+    $('#attDlg').showModal();
+  }
+  $('#attForm').onsubmit = e => {
+    e.preventDefault();
+    const f = e.target.elements;
+    const date = f.date.value, inTs = new Date(date + 'T' + f.inT.value).getTime();
+    const outTs = f.outT.value ? new Date(date + 'T' + f.outT.value).getTime() : 0;
+    if (outTs && outTs <= inTs) { toast('Check-out must be after check-in.'); return; }
+    let rec = editingAtt;
+    if (rec) { rec.date = date; rec.checkIn = inTs; rec.checkOut = outTs; }
+    else {
+      const userId = f.userId.value;
+      rec = recOn(userId, date);
+      if (rec) { rec.checkIn = inTs; rec.checkOut = outTs; }
+      else data.attendance.push({ id: uid(), userId, date, checkIn: inTs, checkOut: outTs });
+    }
+    save(); $('#attDlg').close(); render(); toast('Attendance saved');
+  };
+  $('#attDelete').onclick = () => {
+    if (!editingAtt || !confirm('Delete this attendance record?')) return;
+    data.attendance = data.attendance.filter(x => x.id !== editingAtt.id);
+    save(); $('#attDlg').close(); render(); toast('Record deleted');
+  };
+
+  /* ---------- Salary ---------- */
+  function renderSalary(box) {
+    const mgr = isMgr();
+    const picker = `<div class="tools"><input type="month" id="salMonth" value="${salMonth}" aria-label="Month"></div>`;
+    if (!mgr) {
+      const s = monthSummary(me.id, salMonth), all = totalRemaining(me.id);
+      const pays = data.payments.filter(p => p.userId === me.id && p.month === salMonth).sort((a, b) => b.date.localeCompare(a.date));
+      box.innerHTML = picker + (me.salary ? '' : '<div class="panel note">Your monthly salary has not been set yet. Your manager will set it.</div>') + `
+        <div class="chips">
+          <div class="stat"><div class="k">Monthly salary</div><div class="v">${money(s.salary)}</div></div>
+          <div class="stat"><div class="k">Earned in ${esc(monthLabel(salMonth))}</div><div class="v">${money(s.earned)}</div></div>
+          <div class="stat"><div class="k">Paid for this month</div><div class="v">${money(s.paid)}</div></div>
+          <div class="stat hero"><div class="k">Remaining this month</div><div class="v">${money(s.remaining)}</div></div>
+          <div class="stat"><div class="k">Total remaining, all months</div><div class="v">${money(all)}</div></div>
+        </div>
+        <div class="panel"><h3>How this month was counted</h3>
+          <p class="note">${s.present} full days + ${s.half} half days + ${s.leave} approved leave days = ${s.paidDays} paid days. Earned = salary ÷ ${esc(data.settings.workingDays)} working days × paid days.</p></div>
+        <div class="panel"><h3>Payments received</h3>${pays.length ? `<div class="table-wrap"><table>
+          <thead><tr><th>Date</th><th>Type</th><th>Note</th><th class="num">Amount</th></tr></thead>
+          <tbody>${pays.map(p => `<tr><td>${esc(fmtD(p.date))}</td><td>${esc(p.type)}</td><td>${esc(p.note)}</td><td class="num">${money(p.amount)}</td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">No payments recorded for this month.</div>'}</div>`;
+    } else {
+      const users = data.users.slice().sort((a, b) => a.name.localeCompare(b.name));
+      let tE = 0, tP = 0, tR = 0, tA = 0;
+      const rows = users.map(u => { const s = monthSummary(u.id, salMonth), all = totalRemaining(u.id); tE += s.earned; tP += s.paid; tR += s.remaining; tA += all;
+        return `<tr><td>${esc(u.name)}<br><span class="note">${esc(u.placement)} · ${esc(u.code)}</span></td>
+          <td class="num">${u.salary ? money(u.salary) : '<span class="note">Not set</span>'}</td>
+          <td class="num">${s.present}+${s.half}h+${s.leave}l</td>
+          <td class="num">${money(s.earned)}</td><td class="num">${money(s.paid)}</td><td class="num"><strong>${money(s.remaining)}</strong></td><td class="num">${money(all)}</td>
+          <td><div class="row-actions"><button class="btn small" data-sal="${u.id}">Set salary</button><button class="btn small primary" data-pay="${u.id}">Pay</button><button class="btn small" data-hist="${u.id}">History</button></div></td></tr>`; }).join('');
+      box.innerHTML = picker + `
+        <div class="chips">
+          <div class="stat"><div class="k">Earned (${esc(monthLabel(salMonth))})</div><div class="v">${money(tE)}</div></div>
+          <div class="stat"><div class="k">Paid for this month</div><div class="v">${money(tP)}</div></div>
+          <div class="stat hero"><div class="k">Remaining this month</div><div class="v">${money(tR)}</div></div>
+          <div class="stat"><div class="k">Remaining, all months</div><div class="v">${money(tA)}</div></div>
+        </div>
+        <div class="panel"><div class="table-wrap"><table style="min-width:860px">
+          <thead><tr><th>Person</th><th class="num">Monthly salary</th><th class="num" title="full days + half days + leave days">Days</th><th class="num">Earned</th><th class="num">Paid</th><th class="num">Remaining</th><th class="num">All months</th><th></th></tr></thead>
+          <tbody>${rows}</tbody></table></div>
+          <p class="note" style="margin-top:10px">Days = full days + half days (h) + approved leave days (l). Earned = salary ÷ ${esc(data.settings.workingDays)} working days × paid days.</p></div>`;
+      box.querySelectorAll('[data-sal]').forEach(b => b.onclick = () => {
+        const u = userById(b.dataset.sal), v = prompt('Monthly salary for ' + u.name + ' (₹)', u.salary || '');
+        if (v === null) return;
+        const n = Number(v); if (isNaN(n) || n < 0) { toast('Enter a valid amount.'); return; }
+        u.salary = n; save(); render(); toast('Salary set');
+      });
+      box.querySelectorAll('[data-pay]').forEach(b => b.onclick = () => openPay(b.dataset.pay));
+      box.querySelectorAll('[data-hist]').forEach(b => b.onclick = () => openHist(b.dataset.hist));
+    }
+    $('#salMonth').onchange = e => { salMonth = e.target.value || curMonth(); render(); };
+  }
+  function openPay(userId) {
+    payUserId = userId;
+    const u = userById(userId), s = monthSummary(userId, salMonth), f = $('#payForm'); f.reset();
+    $('#payTitle').textContent = 'Record payment for ' + u.name;
+    f.elements.amount.value = s.remaining > 0 ? s.remaining : '';
+    f.elements.month.value = salMonth; f.elements.date.value = todayStr();
+    $('#payDlg').showModal();
+  }
+  $('#payForm').onsubmit = e => {
+    e.preventDefault();
+    const f = e.target.elements, amount = Number(f.amount.value);
+    if (!(amount > 0)) { toast('Enter an amount above zero.'); return; }
+    data.payments.push({ id: uid(), userId: payUserId, amount, type: f.type.value, month: f.month.value, date: f.date.value, note: f.note.value.trim() });
+    save(); $('#payDlg').close(); render(); toast('Payment saved');
+  };
+  function openHist(userId) {
+    const u = userById(userId);
+    const pays = data.payments.filter(p => p.userId === userId).sort((a, b) => b.date.localeCompare(a.date));
+    $('#histBody').innerHTML = `<h3>Payments to ${esc(u.name)}</h3>${pays.length ? `<div class="table-wrap"><table style="min-width:440px">
+      <thead><tr><th>Date</th><th>For month</th><th>Type</th><th class="num">Amount</th><th></th></tr></thead>
+      <tbody>${pays.map(p => `<tr><td>${esc(fmtD(p.date))}</td><td>${esc(monthLabel(p.month))}</td><td>${esc(p.type)}${p.note ? `<br><span class="note">${esc(p.note)}</span>` : ''}</td><td class="num">${money(p.amount)}</td><td><button class="btn small danger" data-delpay="${p.id}">Delete</button></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">No payments yet.</div>'}
+      <div class="dlg-actions"><button class="btn" id="histClose">Close</button></div>`;
+    $('#histClose').onclick = () => $('#histDlg').close();
+    $('#histBody').querySelectorAll('[data-delpay]').forEach(b => b.onclick = () => {
+      if (!confirm('Delete this payment record?')) return;
+      data.payments = data.payments.filter(p => p.id !== b.dataset.delpay); save(); openHist(userId); render();
+    });
+    if (!$('#histDlg').open) $('#histDlg').showModal();
+  }
+
+  /* ---------- Leave ---------- */
+  function renderLeave(box) {
+    const mgr = isMgr();
+    const chip = s => `<span class="pill ${s === 'approved' ? 'ok' : s === 'rejected' ? 'bad' : 'warn'}">${s[0].toUpperCase() + s.slice(1)}</span>`;
+    const form = `<div class="panel"><h3>Apply for leave</h3><form id="leaveForm" style="display:grid;gap:12px">
+      <div class="two"><label class="f">From<input name="from" type="date" required value="${todayStr()}"></label><label class="f">To<input name="to" type="date" required value="${todayStr()}"></label></div>
+      <label class="f">Reason<input name="reason" required></label>
+      <div><button class="btn primary" type="submit">Apply</button></div></form></div>`;
+    const mine = data.leaves.filter(l => l.userId === me.id).sort((a, b) => b.from.localeCompare(a.from));
+    let html = '';
+    if (mgr) {
+      const pend = data.leaves.filter(l => l.status === 'pending' && l.userId !== me.id).sort((a, b) => a.from.localeCompare(b.from));
+      html += `<div class="panel"><h3>Waiting for your decision (${pend.length})</h3>${pend.length ? pend.map(l => { const u = userById(l.userId) || { name: 'Removed' };
+        return `<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid var(--line)">
+          <div><strong>${esc(u.name)}</strong><br><span class="note">${esc(fmtD(l.from))} to ${esc(fmtD(l.to))} · ${esc(l.reason)}</span></div>
+          <div class="row-actions"><button class="btn small primary" data-ok="${l.id}">Approve</button><button class="btn small danger" data-no="${l.id}">Reject</button></div></div>`; }).join('') : '<div class="empty">No pending requests.</div>'}</div>`;
+      const hist = data.leaves.filter(l => l.status !== 'pending' && l.userId !== me.id).sort((a, b) => b.from.localeCompare(a.from)).slice(0, 30);
+      html += `<div class="panel"><h3>Recent decisions</h3>${hist.length ? `<div class="table-wrap"><table><thead><tr><th>Person</th><th>Dates</th><th>Reason</th><th>Status</th></tr></thead><tbody>${hist.map(l => { const u = userById(l.userId) || { name: 'Removed' }; return `<tr><td>${esc(u.name)}</td><td>${esc(fmtD(l.from))} to ${esc(fmtD(l.to))}</td><td>${esc(l.reason)}</td><td>${chip(l.status)}</td></tr>`; }).join('')}</tbody></table></div>` : '<div class="empty">Nothing here yet.</div>'}</div>`;
+    }
+    html += form + `<div class="panel"><h3>My leave</h3>${mine.length ? `<div class="table-wrap"><table><thead><tr><th>Dates</th><th>Reason</th><th>Status</th><th></th></tr></thead><tbody>${mine.map(l => `<tr><td>${esc(fmtD(l.from))} to ${esc(fmtD(l.to))}</td><td>${esc(l.reason)}</td><td>${chip(l.status)}</td><td>${l.status === 'pending' ? `<button class="btn small danger" data-cancel="${l.id}">Cancel</button>` : ''}</td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">You have not applied for leave.</div>'}</div>`;
+    box.innerHTML = html;
+    $('#leaveForm').onsubmit = e => {
+      e.preventDefault();
+      const f = e.target.elements;
+      if (f.to.value < f.from.value) { toast('The end date is before the start date.'); return; }
+      data.leaves.push({ id: uid(), userId: me.id, from: f.from.value, to: f.to.value, reason: f.reason.value.trim(), status: mgr ? 'approved' : 'pending', createdAt: Date.now() });
+      save(); render(); toast(mgr ? 'Leave recorded' : 'Leave request sent to your manager');
+    };
+    const setStatus = (id, st) => { const l = data.leaves.find(x => x.id === id); if (l) { l.status = st; save(); render(); toast('Leave ' + st); } };
+    box.querySelectorAll('[data-ok]').forEach(b => b.onclick = () => setStatus(b.dataset.ok, 'approved'));
+    box.querySelectorAll('[data-no]').forEach(b => b.onclick = () => setStatus(b.dataset.no, 'rejected'));
+    box.querySelectorAll('[data-cancel]').forEach(b => b.onclick = () => { data.leaves = data.leaves.filter(x => x.id !== b.dataset.cancel); save(); render(); toast('Request cancelled'); });
+  }
+
+  /* ---------- Dialog close buttons & start ---------- */
+  document.querySelectorAll('[data-close]').forEach(b => b.onclick = () => b.closest('dialog').close());
+
+  /* Submit buttons work even where the browser blocks native form submission (some preview windows do) */
+  function fireSubmit(form) {
+    if (form.reportValidity()) form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+  }
+  document.addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('button');
+    if (!b || b.type !== 'submit' || !b.form) return;
+    e.preventDefault(); fireSubmit(b.form);
+  }, true);
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' || !e.target.form || e.target.tagName !== 'INPUT') return;
+    e.preventDefault(); fireSubmit(e.target.form);
+  }, true);
+
+  load();
+  const sid = getSession();
+  me = sid ? userById(sid) || null : null;
+  authMode = data.users.length ? 'login' : 'register';
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,8 +1,6 @@
 {
-  "appId": "com.teamattendee.app",
-  "appName": "Team Attendee",
+  "appId": "com.teamattendance.app",
+  "appName": "Team Attendance",
   "webDir": "www",
-  "backgroundColor": "#F8FAFC",
-  "android": { "allowMixedContent": false },
-  "server": { "androidScheme": "https" }
+  "bundledWebRuntime": false
 }
