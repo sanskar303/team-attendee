@@ -25,8 +25,17 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Add Android platform
+        run: npx cap add android
+
+      - name: Sync Android
+        run: npx cap sync android
+
       - name: Build Android APK
-        run: npm run android:apk
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
